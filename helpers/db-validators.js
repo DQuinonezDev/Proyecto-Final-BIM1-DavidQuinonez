@@ -29,44 +29,47 @@ const emailExiste = async( correo = '' ) => {
 }
 
 
-// const existeUsuarioPorId = async(id) => {
+const existeUsuarioPorId = async(id) => {
 
-//     //Verificar si el ID existe
-//     const existeUser = await Usuario.findById(id);
+    //Verificar si el ID existe
+    const existeUser = await Usuario.findById(id);
 
-//     if ( !existeUser ) {
-//         throw new Error(`El id ${ id } no existe en la DB`);
-//     }
+    if ( !existeUser ) {
+        throw new Error(`El id ${ id } no existe en la DB`);
+    }
 
-// }
-
-
-// const existeCategoriaPorId = async(id) => {
-
-//     //Verificar si el ID existe
-//     const existeCategoria = await Categoria.findById(id);
-
-//     if ( !existeCategoria ) {
-//         throw new Error(`El id ${ id } no existe en la DB`);
-//     }
-
-// }
+}
 
 
-// const existeProductoPorId = async(id) => {
+const existeCategoriaPorId = async(id) => {
 
-//     //Verificar si el ID existe
-//     const existeProducto = await Producto.findById(id);
+    //Verificar si el ID existe
+    const existeCategoria = await Categoria.findById(id);
 
-//     if ( !existeProducto ) {
-//         throw new Error(`El id ${ id } no existe en la DB`);
-//     }
+    if ( !existeCategoria ) {
+        throw new Error(`El id ${ id } no existe en la DB`);
+    }
 
-// }
+}
+
+
+const existeProductoPorId = async(id) => {
+
+    //Verificar si el ID existe
+    const existeProducto = await Producto.findById(id);
+
+    if ( !existeProducto ) {
+        throw new Error(`El id ${ id } no existe en la DB`);
+    }
+
+}
 
 
 
 module.exports = {
     esRoleValido,
     emailExiste,
+    existeProductoPorId,
+    existeCategoriaPorId,
+    existeUsuarioPorId
 }

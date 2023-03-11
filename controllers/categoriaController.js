@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 
 //! Importacion del modelo
 const Categoria = require('../models/categoriaModel');
+const Producto = require('../models/producto');
 
 
 
@@ -27,20 +28,38 @@ const getCategoria = async (req = request, res = response) => {
 
 //* Agregando Categorias
 const postCategoria = async (req = request, res = response) => {
+    
+    const _id = req.usuario._id;
 
-    //* Desestructuración de campos obligatorios
-    const { nombre, descripcion } = req.body; //*Esto se muestra en pantalla
-    const categoriaGuardadoDB = new Categoria({ nombre, descripcion });
+    const { estado, usuario, ...body } = req.body;
 
-    //! Guardar el campo en Base de datos MongoDb
-    await categoriaGuardadoDB.save();
+    const categoriaDB = await Categoria.findOne({ nombre: body.nombre.toUpperCase() });
+    // const productoDB = await Producto.findOne({ nombre: body.nombre });
 
-    res.json({
-        msg: 'POST Api - post de Categoria (agregando datos)',
-        // nombre,
-        // descripcion,
-        categoriaGuardadoDB
-    });
+    //validacion si el producto ya existe
+    if (categoriaDB) {
+        return res.status(400).json({
+            msg: `La categoria ${categoriaDB.nombre}, ya existe en la DB`
+        });
+    } else {
+        const data = {
+            ...body,
+            nombre: body.nombre.toUpperCase(),
+            usuario: _id,
+        }
+
+        const categoria = await Categoria(data);
+
+        //Guardar en DB
+        await categoria.save();
+
+        res.status(201).json({
+            msg:"POST API - POST CATEGORIA",
+            categoria});
+    }
+
+    
+  
 }
 
 
@@ -52,12 +71,12 @@ const putCategoria = async (req = request, res = response) => {
     const { id } = req.params;
 
     //? ...resto es hasta aca llegamos, se modifican los datos que no estan antes del ..resto. lo que ya no se puede cambiar el resto de cosas que quedam
-    const { _id, img, estado, ...resto } = req.body;
+    const { _id, img, ...resto } = req.body;
     //? Los parametros img, rol, estado no se modifican pero los demas si por el ...resto
 
 
     //? editar el usuario con el id
-    const categoriaEditada = await Categoria.findByIdAndUpdate(id, resto);
+    const categoriaEditada = await Categoria.findByIdAndUpdate(id, resto, { new: true });
 
     res.json({
         msg: 'PUT api - Editando Categoria',
@@ -68,22 +87,30 @@ const putCategoria = async (req = request, res = response) => {
 
 
 //* Eliminando Categorias via el estado
-const deleteCategoria = async (req = request, res = response) => {
-    //Req.params sirve para traer parametros de las rutas
+const deleteCategoria = async (req, res) => {
     const { id } = req.params;
 
-    //*Eliminando de la base de datos Fisicamente
-    // const categoriaEliminada = await Categoria.findByIdAndDelete(id);
+    //? Buscar productos de la categoría a eliminar
+    const productos = await Producto.find({ categoria: id });
 
-    //*Eliminando de la base de datos por estado
-    const caegoriaEliminada = await Categoria.findByIdAndUpdate(id, { estado: false });
+    // ? Asignar la categoría por defecto a los productos
+    const categoriaPorDefecto = await Categoria.findOne({ nombre: 'Sin Categoria' });
+
+    //*Remplazando la categoria eliminada por la que se remplazara
+    productos.forEach(async (producto) => {
+        producto.categoria = '640bbcd9f0fb26a6dc68f949';
+        await producto.save();
+    });
+
+    //*Eliminando de la base de datos Fisicamente
+    const categoriaEliminada = await Categoria.findByIdAndDelete(id);
 
     res.json({
-        msg: 'DELETE api - Eliminando Categoria via estado',
+        msg: 'Categoría eliminada correctamente.',
         id,
-        caegoriaEliminada
+        categoriaEliminada
     });
-}
+};
 
 module.exports = {
     getCategoria,

@@ -13,7 +13,7 @@ const esAdminRole = (req = request, res = response, next) => {
     //Verificar que le rol sea ADMIN_ROLE
     const { rol, nombre } = req.usuario;
 
-    if ( rol !== 'ADMIN_ROLE' ) {
+    if ( rol !== 'ADMIN' ) {
         return res.status(500).json({
             msg: `${ nombre } no es Administrador - No tiene acceso a esta función`
         });

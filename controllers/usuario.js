@@ -20,10 +20,44 @@ const getUsuarios = async (req = request, res = response) => {
 
 }
 
+const getUsuariosClient = async (req = request, res = response) => {
+
+    //condiciones del get
+    const query = { rol: "CLIENT", estado: true };
+
+    const listaUsuarios = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+    ]);
+
+    res.json({
+        msg: 'get Api - Controlador Usuario (Clientes)',
+        listaUsuarios
+    });
+
+}
+
+const getUsuariosAdmin = async (req = request, res = response) => {
+
+    //condiciones del get
+    const query = { rol: "ADMIN", estado: true };
+
+    const listaUsuarios = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+    ]);
+
+    res.json({
+        msg: 'get Api - Controlador Usuario (Admin)',
+        listaUsuarios
+    });
+
+}
+
 const postUsuario = async (req = request, res = response) => {
 
     //Desestructuración
-    const { nombre, correo, password, rol } = req.body;
+    const { nombre, correo, password, rol = 'ADMIN' } = req.body;
     const usuarioGuardadoDB = new Usuario({ nombre, correo, password, rol });
 
     //Encriptar password
@@ -41,11 +75,32 @@ const postUsuario = async (req = request, res = response) => {
 }
 
 
+const postCliente = async (req = request, res = response) => {
+
+    //Desestructuración
+    const { nombre, correo, password, rol = 'CLIENT' } = req.body;
+    const usuarioGuardadoDB = new Usuario({ nombre, correo, password, rol });
+
+    //Encriptar password
+    const salt = bcrypt.genSaltSync();
+    usuarioGuardadoDB.password = bcrypt.hashSync(password, salt);
+
+    //Guardar en BD
+    await usuarioGuardadoDB.save();
+
+    res.json({
+        msg: 'Post Api - Post Usuario',
+        usuarioGuardadoDB
+    });
+
+}
+
 const putUsuario = async (req = request, res = response) => {
 
     //Req.params sirve para traer parametros de las rutas
-    const { id } = req.params;
-    const { _id, img,  /* rol,*/  estado, google, ...resto } = req.body;
+    const _id = req.usuario.id;
+
+    const { correo, ...resto } = req.body;
     //Los parametros img, rol, estado y google no se modifican, el resto de valores si (nombre, correo y password)
 
     //Si la password existe o viene en el req.body, la encripta
@@ -56,7 +111,7 @@ const putUsuario = async (req = request, res = response) => {
     }
 
     //Editar al usuario por el id
-    const usuarioEditado = await Usuario.findByIdAndUpdate(id, resto);
+    const usuarioEditado = await Usuario.findByIdAndUpdate(_id, resto, { new: true });
 
     res.json({
         msg: 'PUT editar user',
@@ -67,13 +122,14 @@ const putUsuario = async (req = request, res = response) => {
 
 const deleteUsuario = async (req = request, res = response) => {
     //Req.params sirve para traer parametros de las rutas
-    const { id } = req.params;
+    const _id = req.usuario.id;
+
 
     //Eliminar fisicamente de la DB
     //const usuarioEliminado = await Usuario.findByIdAndDelete( id);
 
     //Eliminar cambiando el estado a false
-    const usuarioEliminado = await Usuario.findByIdAndUpdate(id, { estado: false });
+    const usuarioEliminado = await Usuario.findByIdAndUpdate(_id, { estado: false }, { new: true });
 
     res.json({
         msg: 'DELETE eliminar user',
@@ -81,11 +137,48 @@ const deleteUsuario = async (req = request, res = response) => {
     });
 }
 
+const deleteCliente = async (req = request, res = response) => {
+    //Req.params sirve para traer parametros de las rutas
+    //Req.params sirve para traer parametros de las rutas
+    const { id } = req.params;
+
+    //Eliminar fisicamente de la DB
+    //const usuarioEliminado = await Usuario.findByIdAndDelete( id);
+
+    //Eliminar cambiando el estado a false
+    const usuarioEliminado = await Usuario.findByIdAndUpdate(id, { estado: false }, { new: true });
+
+    res.json({
+        msg: 'DELETE eliminar cliente',
+        usuarioEliminado
+    });
+}
+const deleteClienteU = async (req = request, res = response) => {
+    //Req.params sirve para traer parametros de las rutas
+    const _id = req.usuario.id;
+
+
+    //Eliminar fisicamente de la DB
+    //const usuarioEliminado = await Usuario.findByIdAndDelete( id);
+
+    //Eliminar cambiando el estado a false
+    const usuarioEliminado = await Usuario.findByIdAndUpdate(_id, { estado: false }, { new: true });
+
+    res.json({
+        msg: 'DELETE eliminar user',
+        usuarioEliminado
+    });
+}
 module.exports = {
     getUsuarios,
     postUsuario,
     putUsuario,
-    deleteUsuario
+    deleteUsuario,
+    getUsuariosClient,
+    getUsuariosAdmin,
+    deleteCliente,
+    postCliente,
+    deleteClienteU
 }
 
 

@@ -3,8 +3,7 @@ const { Schema, model } = require('mongoose');
 const ProductoSchema = Schema({
     nombre: {
         type: String,
-        required: [true , 'El nombre de la cateogira es obligatorio'],
-        unique: true
+        required: [true, 'El nombre del producto es obligatorio'],
     },
     estado: {
         type: Boolean,
@@ -18,17 +17,28 @@ const ProductoSchema = Schema({
     },
     precio: {
         type: Number,
+        required:true,
         default: 0
     },
     categoria: {
         type: Schema.Types.ObjectId,
         ref: 'Categoria',
+        required: true,
+        default: '640ab36c7e86a57ea60431a2'
+    },
+    descripcion: {
+        type: String
+    },
+    stock: {
+        type: Number,
         required: true
     },
-    descripcion: { type: String },
-    disponible: { type: Boolean, default: true },
-
+    ventas: {
+        type: Number,
+        default: 0
+    }
 });
+
 
 
 module.exports = model('Producto', ProductoSchema);
